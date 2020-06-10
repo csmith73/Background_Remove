@@ -1,0 +1,5 @@
+Use U2net_test.py to create the mask and then use the mask and original image in Alpha_Blending to remove the background.
+
+Put original image in C:\Users\Carter\PycharmProjects\U-2-Net\test_data\test_images
+
+then run u2net.test.py and the results will be in C:\Users\Carter\PycharmProjects\U-2-Net\test_data\u2net_results\Alpha_Blending
