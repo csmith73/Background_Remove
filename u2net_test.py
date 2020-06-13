@@ -181,7 +181,10 @@ def main():
         print(img_name_list)
         file_name_orig = img_name_list[i_test].split("/")[-1]
         print(file_name_orig)
-        file_name_orig = file_name_orig.split("\\")[1]
+        #for Linux
+        file_name_orig = file_name_orig.split("/")[3]
+        #For windows "\\"
+        #file_name_orig = file_name_orig.split("\\")[1]
         file_name_orig = file_name_orig.split(".")[0]
         file_name = file_name_orig + "_Mask.png"
         print(file_name)
