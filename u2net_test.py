@@ -77,11 +77,7 @@ def blend(foreground, background, alpha):
 
     Example
     -------
-    >>> from pymatting import *
-    >>> foreground = load_image("data/lemur/lemur_foreground.png", "RGB")
-    >>> background = load_image("data/lemur/beach.png", "RGB")
-    >>> alpha = load_image("data/lemur/lemur_alpha.png", "GRAY")
-    >>> I = blend(foreground, background, alpha)
+
     """
     if len(alpha.shape) == 2:
         print("alpha len(alpha.shape) == 2")
@@ -182,38 +178,14 @@ def main():
         print(type(imo))
 
 
-        #img = cv2.imread(img_name_list[i_test])
-        #img = np.array(img)
-        #background = Image.new('RGB', (img.shape[1], img.shape[0]), (255, 255, 255))
-        #background = np.array(background)
-
-        #cv2.imshow("Origninal Image",img)
-        #cv2.waitKey(0)
-        #pb_np = pb_np[:, :, 2]
-        #cv2.imshow("Alpha Mat Image", pb_np/255)
-        #cv2.waitKey(0)
-        #print(pb_np)
-        #pb_np = pb_np/255
-        #new_image = blend(img, background, pb_np)
-        #cv2.imshow("New Image", new_image)
-        #cv2.waitKey(0)
-        #cv2.imshow('image', img)
-        #cv2.waitKey(0)
-        #mask = cv2.imread(pred)
-        #mask = cv2.cvtColor(pb_np, cv2.COLOR_BGR2GRAY)
-        #transparent = np.zeros((img.shape[0], img.shape[1], 4), dtype=np.uint8)
-        #transparent[:, :, 0:3] = img
-        #transparent[:, :, 3] = mask
-        #img_write_path = "./test_data/test_images/" + str(img_name_single)
-        #print(img_write_path)
-        #print(img_name_list[i_test])
+        print(img_name_list)
         file_name_orig = img_name_list[i_test].split("/")[-1]
+        print(file_name_orig)
         file_name_orig = file_name_orig.split("\\")[1]
         file_name_orig = file_name_orig.split(".")[0]
         file_name = file_name_orig + "_Mask.png"
         print(file_name)
-        #cv2.imwrite("./test_data/u2net_results/" + file_name, new_image)
-        #imo.save("./test_data/u2net_results/Image_Masks/" + file_name)
+
         cv2.imwrite("./test_data/u2net_results/Image_Masks/" + file_name, pb_np)
         time.sleep(2)
         # Read the images
@@ -226,8 +198,7 @@ def main():
 
         background = np.zeros([foreground.shape[0], foreground.shape[1], 3], dtype=np.uint8)
         background.fill(255)
-        # background = np.array(background)
-        # background = cv2.imread("./test_data/test_data/llama.jpg")
+
         alpha = cv2.imread(Mask_Image_Path)
 
         # Convert uint8 to float
@@ -245,8 +216,6 @@ def main():
         outImage = cv2.add(foreground, background)
 
         # Display image
-        # cv2.imshow("outImg", outImage / 255)
-        # cv2.waitKey(0)
         cv2.imwrite(Output_Image_Path, outImage)
 
 if __name__ == "__main__":
