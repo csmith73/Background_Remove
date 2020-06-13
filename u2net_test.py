@@ -183,7 +183,7 @@ def main():
         print(file_name_orig)
         #for Linux
         print(file_name_orig.split("/"))
-        file_name_orig = file_name_orig.split("/")[2]
+        file_name_orig = file_name_orig.split("/")[0]
         #For windows "\\"
         #file_name_orig = file_name_orig.split("\\")[1]
         file_name_orig = file_name_orig.split(".")[0]
