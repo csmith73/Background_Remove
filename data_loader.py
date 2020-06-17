@@ -22,6 +22,7 @@ class RescaleT(object):
 
 		h, w = image.shape[:2]
 
+
 		if isinstance(self.output_size,int):
 			if h > w:
 				new_h, new_w = self.output_size*h/w,self.output_size
@@ -37,9 +38,9 @@ class RescaleT(object):
 		# lbl = transform.resize(label,(new_h,new_w),mode='constant', order=0, preserve_range=True)
 
 		img = transform.resize(image,(self.output_size,self.output_size),mode='constant')
-		lbl = transform.resize(label,(self.output_size,self.output_size),mode='constant', order=0, preserve_range=True)
+		label = transform.resize(label,(self.output_size,self.output_size),mode='constant', order=0, preserve_range=True)
 
-		return {'imidx':imidx, 'image':img,'label':lbl}
+		return {'imidx':imidx, 'image':img,'label':label}
 
 class Rescale(object):
 

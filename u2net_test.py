@@ -1,4 +1,5 @@
 import os
+from flask import Flask, request, jsonify
 import cv2
 import time
 from skimage import io, transform
@@ -32,195 +33,96 @@ def normPRED(d):
 
     return dn
 
-def save_output(image_name,pred,d_dir):
+def remove_background(input_image):
+
+    # --------- 1. get image path and name ---------
+    model_name='u2net'#u2netp
+    model_dir = './saved_models/'+ model_name + '/' + model_name + '.pth'
+
+
+    # --------- 2. dataloader ---------
+    eval_transforms = transforms.Compose([RescaleT(320), ToTensor()])
+    # --------- 3. model define ---------
+    if(model_name=='u2net'):
+        print("...load U2NET---173.6 MB")
+        net = U2NET(3,1)
+    elif (model_name == 'u2netp'):
+        print("...load U2NEP---4.7 MB")
+        net = U2NETP(3, 1)
+    model_load_start_time = time.time()
+    #net.load_state_dict(torch.load(model_dir, map_location='cpu'))
+    net.load_state_dict(torch.load(model_dir))
+    print("Model Load Time: %s seconds ---" % (time.time() - model_load_start_time))
+    
+    net.eval()
+
+    # --------- 4. inference for each image ---------
+    #The below code takes the uploaded image and creates an alpha mask
+
+    #Convert PIllow Image to OpenCV
+    opencv_image = cv2.cvtColor(np.array(input_image), cv2.COLOR_RGB2BGR)
+
+    #Put opencv_image into dict so u2net tensor functions will work
+    input_image_dict = {'imidx': np.array([[0]]), 'image': opencv_image, 'label': opencv_image}
+
+    #Transform images so it is same size as model was trained on
+    image_tensor = eval_transforms(input_image_dict)
+    input = Variable(image_tensor['image'])
+    d1, d2, d3, d4, d5, d6, d7 = net(input[None, ...].float())
+
+    # normalization
+    pred = d1[:, 0, :, :]
+    pred = normPRED(pred)
 
     predict = pred
     predict = predict.squeeze()
     predict_np = predict.cpu().data.numpy()
 
-    im = Image.fromarray(predict_np*255).convert('RGB')
-    img_name = image_name.split("/")[-1]
-    image = io.imread(image_name)
-    imo = im.resize((image.shape[1],image.shape[0]),resample=Image.BILINEAR)
-
+    im = Image.fromarray(predict_np * 255).convert('RGB')
+    im_np = np.array(im)
+    w, h = input_image.size
+    imo = im.resize((w, h), resample=Image.BILINEAR)
     pb_np = np.array(imo)
+    del d1, d2, d3, d4, d5, d6, d7
 
-    aaa = img_name.split(".")
-    bbb = aaa[0:-1]
-    imidx = bbb[0]
-    for i in range(1,len(bbb)):
-        imidx = imidx + "." + bbb[i]
+    #Below code is to take the alpha mask and remove the background from image
+    #https://www.learnopencv.com/alpha-blending-using-opencv-cpp-python/
+    foreground = opencv_image
+    background = np.zeros([foreground.shape[0], foreground.shape[1], 3], dtype=np.uint8)
+    background.fill(255)
 
-    imo.save(d_dir+imidx+'.png')
+    alpha = pb_np
 
-def blend(foreground, background, alpha):
-    """This function composes a new image for given foreground image, background image and alpha matte.
+    # Convert uint8 to float
+    foreground = foreground.astype(float)
+    background = background.astype(float)
 
-    This is done by applying the composition equation
+    # Normalize the alpha mask to keep intensity between 0 and 1
+    alpha = alpha.astype(float) / 255
 
-    .. math::
-        I = \\alpha F + (1-\\alpha)B.
-
-    Parameters
-    ----------
-    foreground: numpy.ndarray
-        Foreground image
-    background: numpy.ndarray
-        Background image
-    alpha: numpy.ndarray
-        Alpha matte
-
-    Returns
-    -------
-    image: numpy.ndarray
-        Composed image as numpy.ndarray
-
-    Example
-    -------
-
-    """
-    if len(alpha.shape) == 2:
-        print("alpha len(alpha.shape) == 2")
-        alpha = alpha[:, :, np.newaxis]
-    print(alpha.shape)
-    print(foreground.shape)
-    print(background.shape)
+    # Multiply the foreground with the alpha matte
+    foreground = cv2.multiply(alpha, foreground)
 
 
-    return alpha * foreground + (1 - alpha) * background
+    # Multiply the background with ( 1 - alpha )
+    background = cv2.multiply(1.0 - alpha, background)
 
+    # Add the masked foreground and background.
+    outImage = cv2.add(foreground, background)
 
-
-def main():
-
-    # --------- 1. get image path and name ---------
-    model_name='u2net'#u2netp
-
-
-    image_dir = './test_data/test_images/'
-    prediction_dir = './test_data/' + model_name + '_results/'
-    model_dir = './saved_models/'+ model_name + '/' + model_name + '.pth'
-
-    img_name_list = glob.glob(image_dir + '*')
-    print(img_name_list)
-
-    # --------- 2. dataloader ---------
-    #1. dataloader
-    test_salobj_dataset = SalObjDataset(img_name_list = img_name_list,
-                                        lbl_name_list = [],
-                                        transform=transforms.Compose([RescaleT(320),
-                                                                      ToTensorLab(flag=0)])
-                                        )
-    test_salobj_dataloader = DataLoader(test_salobj_dataset,
-                                        batch_size=1,
-                                        shuffle=False,
-                                        num_workers=1)
-
-    # --------- 3. model define ---------
-    if(model_name=='u2net'):
-        print("...load U2NET---173.6 MB")
-        net = U2NET(3,1)
-    elif(model_name=='u2netp'):
-        print("...load U2NEP---4.7 MB")
-        net = U2NETP(3,1)
-    net.load_state_dict(torch.load(model_dir, map_location='cpu'))
-    if torch.cuda.is_available():
-        net.cuda()
-    net.eval()
-
-    # --------- 4. inference for each image ---------
-    for i_test, data_test in enumerate(test_salobj_dataloader):
-
-        print("inferencing:",img_name_list[i_test].split("/")[-1])
-
-        inputs_test = data_test['image']
-        inputs_test = inputs_test.type(torch.FloatTensor)
-
-        if torch.cuda.is_available():
-            inputs_test = Variable(inputs_test.cuda())
-        else:
-            inputs_test = Variable(inputs_test)
-
-        d1,d2,d3,d4,d5,d6,d7= net(inputs_test)
-
-        # normalization
-        pred = d1[:,0,:,:]
-        pred = normPRED(pred)
-
-        # save results to test_results folder
-        #save_output(img_name_list[i_test],pred,prediction_dir)
-        predict = pred
-        predict = predict.squeeze()
-        predict_np = predict.cpu().data.numpy()
-
-        #im = Image.fromarray(predict_np * 255).convert('RGB')
-        im = Image.fromarray(predict_np * 255).convert('RGB')
-        im_np = np.array(im)
-        print("im_np shape")
-        print(im_np.shape)
-        img_name = img_name_list[i_test].split("/")[-1]
-        image = io.imread(img_name_list[i_test])
-        imo = im.resize((image.shape[1], image.shape[0]), resample=Image.BILINEAR)
-        pb_np = np.array(imo)
-        print("pb_np_shape")
-        print(pb_np.shape)
-
-
-        aaa = img_name.split(".")
-        bbb = aaa[0:-1]
-        imidx = bbb[0]
-        for i in range(1, len(bbb)):
-            imidx = imidx + "." + bbb[i]
-
-        #imo.save(d_dir + imidx + '.png')
-
-        del d1,d2,d3,d4,d5,d6,d7
-        print(type(imo))
-
-
-        print(img_name_list)
-        file_name_orig = img_name_list[i_test].split("/")[-1]
-        print(file_name_orig)
-        #for Linux
-        print(file_name_orig.split("/"))
-        file_name_orig = file_name_orig.split("/")[0]
-        #For windows "\\"
-        #file_name_orig = file_name_orig.split("\\")[1]
-        file_name_orig = file_name_orig.split(".")[0]
-        file_name = file_name_orig + "_Mask.png"
-        print(file_name)
-
-        cv2.imwrite("./test_data/u2net_results/Image_Masks/" + file_name, pb_np)
-        time.sleep(2)
-        # Read the images
-        Original_Image_Path = './test_data/test_images/' + file_name_orig + '.jpg'
-        print(Original_Image_Path)
-        Mask_Image_Path = './test_data/u2net_results/Image_Masks/' + file_name
-        Output_Image_Path = './test_data/u2net_results/Alpha_Blending/' + file_name_orig + '.png'
-        foreground = cv2.imread(Original_Image_Path)
-        #foreground = pb_np
-
-        background = np.zeros([foreground.shape[0], foreground.shape[1], 3], dtype=np.uint8)
-        background.fill(255)
-
-        alpha = cv2.imread(Mask_Image_Path)
-
-        # Convert uint8 to float
-        foreground = foreground.astype(float)
-        background = background.astype(float)
-
-        # Normalize the alpha mask to keep intensity between 0 and 1
-        alpha = alpha.astype(float) / 255
-        # Multiply the foreground with the alpha matte
-        foreground = cv2.multiply(alpha, foreground)
-
-        # Multiply the background with ( 1 - alpha )
-        background = cv2.multiply(1.0 - alpha, background)
-        # Add the masked foreground and background.
-        outImage = cv2.add(foreground, background)
-
-        # Display image
-        cv2.imwrite(Output_Image_Path, outImage)
+    # Display image
+    #cv2.imwrite(Output_Image_Path, outImage)
+    #cv2.imshow("Output_Image",cv2.resize(outImage/255, (500,500)))
+    #cv2.waitKey(0)
 
 if __name__ == "__main__":
-    main()
+    start_time = time.time()
+    image_dir = './test_data/test_images/'
+    img_name_list = glob.glob(image_dir + '*')
+    print(img_name_list)
+    loaded_image = Image.open(img_name_list[0])
+    print("Image Size")
+    print(loaded_image.size)
+    remove_background(loaded_image)
+    #6.012 seconds with 3.5MB photo
+    print("--- %s seconds ---" % (time.time() - start_time))

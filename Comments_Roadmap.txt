@@ -1,0 +1,2 @@
+Create API that does all the image processing.
+    Duplicate droplet if load increases
