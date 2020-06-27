@@ -38,6 +38,7 @@ def remove_background(input_image):
     # --------- 1. get image path and name ---------
     model_name='u2net'#u2netp
     model_dir = './saved_models/'+ model_name + '/' + model_name + '.pth'
+    Output_Image_Path = './test_data/u2net_results/Alpha_Blending/out1.png'
 
 
     # --------- 2. dataloader ---------
@@ -53,14 +54,14 @@ def remove_background(input_image):
     #net.load_state_dict(torch.load(model_dir, map_location='cpu'))
     net.load_state_dict(torch.load(model_dir))
     print("Model Load Time: %s seconds ---" % (time.time() - model_load_start_time))
-    
+
     net.eval()
 
     # --------- 4. inference for each image ---------
     #The below code takes the uploaded image and creates an alpha mask
 
     #Convert PIllow Image to OpenCV
-    opencv_image = cv2.cvtColor(np.array(input_image), cv2.COLOR_RGB2BGR)
+    opencv_image = cv2.cvtColor(np.array(input_image), cv2.COLOR_RGB2BGRA)
 
     #Put opencv_image into dict so u2net tensor functions will work
     input_image_dict = {'imidx': np.array([[0]]), 'image': opencv_image, 'label': opencv_image}
@@ -88,32 +89,53 @@ def remove_background(input_image):
     #Below code is to take the alpha mask and remove the background from image
     #https://www.learnopencv.com/alpha-blending-using-opencv-cpp-python/
     foreground = opencv_image
+    #background will be image that you want to combine the foreground with.
     background = np.zeros([foreground.shape[0], foreground.shape[1], 3], dtype=np.uint8)
+    background = cv2.cvtColor(np.array(background), cv2.COLOR_RGB2BGRA)
+    print(foreground.shape)
+    print(background.shape)
     background.fill(255)
-
     alpha = pb_np
 
+    #This will take the foreground and mask and create a png image of the foreground with transparent background.
+    b, g, r = cv2.split(alpha)
+    print(b.shape)
+    foreground[:, :, 3] = b
+    #cv2.imshow("Output_Image", foreground)
+    #cv2.waitKey(0)
+    cv2.imwrite(Output_Image_Path, foreground)
+
+
+
+
+
     # Convert uint8 to float
-    foreground = foreground.astype(float)
-    background = background.astype(float)
+    #foreground = foreground.astype(float)
+    #background = background.astype(float)
 
     # Normalize the alpha mask to keep intensity between 0 and 1
-    alpha = alpha.astype(float) / 255
+    #alpha = alpha.astype(float) / 255
 
     # Multiply the foreground with the alpha matte
-    foreground = cv2.multiply(alpha, foreground)
+    #foreground = cv2.multiply(alpha, foreground)
 
 
     # Multiply the background with ( 1 - alpha )
-    background = cv2.multiply(1.0 - alpha, background)
+    #background = cv2.multiply(1.0 - alpha, background)
 
     # Add the masked foreground and background.
-    outImage = cv2.add(foreground, background)
+    #outImage = cv2.add(foreground, background)
 
     # Display image
     #cv2.imwrite(Output_Image_Path, outImage)
-    #cv2.imshow("Output_Image",cv2.resize(outImage/255, (500,500)))
+    #cv2.imshow("Output_Image",cv2.resize(outImage/255, (1500,1000)))
+    #cv2.imshow("Output_Image", outImage/255 )
     #cv2.waitKey(0)
+
+    foreground = cv2.cvtColor(foreground, cv2.COLOR_BGRA2RGBA)
+    foreground_pil = Image.fromarray(foreground)
+
+    return foreground_pil
 
 if __name__ == "__main__":
     start_time = time.time()
