@@ -51,8 +51,8 @@ def remove_background(input_image):
         print("...load U2NEP---4.7 MB")
         net = U2NETP(3, 1)
     model_load_start_time = time.time()
-    #net.load_state_dict(torch.load(model_dir, map_location='cpu'))
-    net.load_state_dict(torch.load(model_dir))
+    net.load_state_dict(torch.load(model_dir, map_location='cpu'))
+    #net.load_state_dict(torch.load(model_dir))
     print("Model Load Time: %s seconds ---" % (time.time() - model_load_start_time))
 
     net.eval()
