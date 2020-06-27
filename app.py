@@ -49,6 +49,7 @@ def remove_background_api():
         resp = Response(img_bg_io, status=200)
         #r = requests.post('http://127.0.0.1:5000/receive_image', files={'file': img_bg_io.getvalue()})
         #print(r)
+        img.close()
         return resp
 
 if __name__ == '__main__':

@@ -103,7 +103,7 @@ def remove_background(input_image):
     foreground[:, :, 3] = b
     #cv2.imshow("Output_Image", foreground)
     #cv2.waitKey(0)
-    cv2.imwrite(Output_Image_Path, foreground)
+    #cv2.imwrite(Output_Image_Path, foreground)
 
 
 
@@ -138,13 +138,13 @@ def remove_background(input_image):
     return foreground_pil
 
 if __name__ == "__main__":
-    start_time = time.time()
-    image_dir = './test_data/test_images/'
-    img_name_list = glob.glob(image_dir + '*')
-    print(img_name_list)
-    loaded_image = Image.open(img_name_list[0])
-    print("Image Size")
-    print(loaded_image.size)
-    remove_background(loaded_image)
-    #6.012 seconds with 3.5MB photo
-    print("--- %s seconds ---" % (time.time() - start_time))
+    # start_time = time.time()
+    # image_dir = './test_data/test_images/'
+    # img_name_list = glob.glob(image_dir + '*')
+    # print(img_name_list)
+    # loaded_image = Image.open(img_name_list[0])
+    # print("Image Size")
+    # print(loaded_image.size)
+    # remove_background(loaded_image)
+    # #6.012 seconds with 3.5MB photo
+    # print("--- %s seconds ---" % (time.time() - start_time))
