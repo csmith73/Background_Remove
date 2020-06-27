@@ -41,7 +41,7 @@ def remove_background_api():
         img = Image.open(request.files['file'].stream)
         #img.save('./static/uploads/upload.jpg')
         img_bg_removed = remove_background(img)
-        img_bg_removed.save('./test_data/API Images/out.png')
+        #img_bg_removed.save('./test_data/API Images/out.png')
         # img.save('./static/uploads/upload.jpg')
         img_bg_io = io.BytesIO()
         img_bg_removed.save(img_bg_io, 'PNG', quality=100)
