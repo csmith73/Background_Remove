@@ -23,7 +23,7 @@ from data_loader import SalObjDataset
 
 
 from model import U2NETP # small version u2net 4.7 MB
-
+from model import U2NET
 # normalize the predicted SOD probability map
 def normPRED(d):
     ma = torch.max(d)
@@ -51,7 +51,7 @@ print("Model Load Time: %s seconds ---" % (time.time() - model_load_start_time))
 net.eval()
 
 def remove_background(input_image):
-
+    func_start_time = time.time()
     # --------- 1. get image path and name ---------
     #model_name='u2net'#u2netp
     #model_dir = './saved_models/'+ model_name + '/' + model_name + '.pth'
@@ -79,28 +79,35 @@ def remove_background(input_image):
 
     #Convert PIllow Image to OpenCV
     opencv_image = cv2.cvtColor(np.array(input_image), cv2.COLOR_RGB2BGRA)
-
+    print("convert pillow image to opencv: %s" % (time.time() - func_start_time))
     #Put opencv_image into dict so u2net tensor functions will work
     input_image_dict = {'imidx': np.array([[0]]), 'image': opencv_image, 'label': opencv_image}
-
+    print("Put opencv image into dict: %s" % (time.time() - func_start_time))
     #Transform images so it is same size as model was trained on
-    image_tensor = eval_transforms(input_image_dict)
+    image_tensor = eval_transforms(input_image_dict) #This function takes the longest
+    print("transform images: %s" % (time.time() - func_start_time))
     input = Variable(image_tensor['image'])
+    print("variable function: %s" % (time.time() - func_start_time))
     d1, d2, d3, d4, d5, d6, d7 = net(input[None, ...].float())
+    print("net function: %s" % (time.time() - func_start_time))
 
     # normalization
     pred = d1[:, 0, :, :]
     pred = normPRED(pred)
+    print("normalization: %s" % (time.time() - func_start_time))
 
     predict = pred
     predict = predict.squeeze()
     predict_np = predict.cpu().data.numpy()
 
     im = Image.fromarray(predict_np * 255).convert('RGB')
+    print("convert to pillow image: %s" % (time.time() - func_start_time))
     im_np = np.array(im)
     w, h = input_image.size
     imo = im.resize((w, h), resample=Image.BILINEAR)
+    print("resize image: %s" % (time.time() - func_start_time))
     pb_np = np.array(imo)
+    print("pb_np create: %s" % (time.time() - func_start_time))
     del d1, d2, d3, d4, d5, d6, d7
 
     #Below code is to take the alpha mask and remove the background from image
@@ -151,7 +158,7 @@ def remove_background(input_image):
 
     foreground = cv2.cvtColor(foreground, cv2.COLOR_BGRA2RGBA)
     foreground_pil = Image.fromarray(foreground)
-
+    print("end of remove background function: %s" % (time.time() - func_start_time))
     return foreground_pil
 
 if __name__ == "__main__":
