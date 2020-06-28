@@ -162,18 +162,25 @@ def index():
 
 @app.route('/remove_background_api', methods=['POST'])
 def remove_background_api():
+    start_time = time.time()
     print("Remove Background function called.................")
     if request.method == 'POST':
         print("Post received")
         img = Image.open(request.files['file'].stream)
+        app.logger.debug("Image.open: %s seconds ---" % (time.time() - start_time))
         #img.save('./static/uploads/upload.jpg')
         img_bg_removed = remove_background(img)
+        app.logger.debug("Background Remove Function execution time: %s seconds ---" % (time.time() - start_time))
         #img_bg_removed.save('./test_data/API Images/out.png')
         # img.save('./static/uploads/upload.jpg')
         img_bg_io = io.BytesIO()
+
         img_bg_removed.save(img_bg_io, 'PNG', quality=100)
+        app.logger.debug("Savings returned image to bytes io object: %s seconds ---" % (time.time() - start_time))
         img_bg_io.seek(0)
+        app.logger.debug("img bg io seek: %s seconds ---" % (time.time() - start_time))
         resp = Response(img_bg_io, status=200)
+        app.logger.debug("create response: %s seconds ---" % (time.time() - start_time))
         #r = requests.post('http://127.0.0.1:5000/receive_image', files={'file': img_bg_io.getvalue()})
         #print(r)
         img.close()
