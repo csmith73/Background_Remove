@@ -21,7 +21,7 @@ from data_loader import ToTensor
 from data_loader import ToTensorLab
 from data_loader import SalObjDataset
 
-from model import U2NET # full size version 173.6 MB
+
 from model import U2NETP # small version u2net 4.7 MB
 
 # normalize the predicted SOD probability map
@@ -33,29 +33,46 @@ def normPRED(d):
 
     return dn
 
+model_name='u2net'#u2netp
+model_dir = './saved_models/'+ model_name + '/' + model_name + '.pth'
+# --------- 2. dataloader ---------
+eval_transforms = transforms.Compose([RescaleT(320), ToTensor()])
+# --------- 3. model define ---------
+if(model_name=='u2net'):
+    print("...load U2NET---173.6 MB")
+    net = U2NET(3,1)
+elif (model_name == 'u2netp'):
+    print("...load U2NEP---4.7 MB")
+    net = U2NETP(3, 1)
+model_load_start_time = time.time()
+net.load_state_dict(torch.load(model_dir, map_location='cpu'))
+#net.load_state_dict(torch.load(model_dir))
+print("Model Load Time: %s seconds ---" % (time.time() - model_load_start_time))
+net.eval()
+
 def remove_background(input_image):
 
     # --------- 1. get image path and name ---------
-    model_name='u2net'#u2netp
-    model_dir = './saved_models/'+ model_name + '/' + model_name + '.pth'
+    #model_name='u2net'#u2netp
+    #model_dir = './saved_models/'+ model_name + '/' + model_name + '.pth'
     Output_Image_Path = './test_data/u2net_results/Alpha_Blending/out1.png'
 
 
     # --------- 2. dataloader ---------
-    eval_transforms = transforms.Compose([RescaleT(320), ToTensor()])
-    # --------- 3. model define ---------
-    if(model_name=='u2net'):
-        print("...load U2NET---173.6 MB")
-        net = U2NET(3,1)
-    elif (model_name == 'u2netp'):
-        print("...load U2NEP---4.7 MB")
-        net = U2NETP(3, 1)
-    model_load_start_time = time.time()
-    net.load_state_dict(torch.load(model_dir, map_location='cpu'))
-    #net.load_state_dict(torch.load(model_dir))
-    print("Model Load Time: %s seconds ---" % (time.time() - model_load_start_time))
-
-    net.eval()
+    # eval_transforms = transforms.Compose([RescaleT(320), ToTensor()])
+    # # --------- 3. model define ---------
+    # if (model_name == 'u2net'):
+    #     print("...load U2NET---173.6 MB")
+    #     net = U2NET(3, 1)
+    # elif (model_name == 'u2netp'):
+    #     print("...load U2NEP---4.7 MB")
+    #     net = U2NETP(3, 1)
+    # model_load_start_time = time.time()
+    # net.load_state_dict(torch.load(model_dir, map_location='cpu'))
+    # # net.load_state_dict(torch.load(model_dir))
+    # print("Model Load Time: %s seconds ---" % (time.time() - model_load_start_time))
+    #
+    # net.eval()
 
     # --------- 4. inference for each image ---------
     #The below code takes the uploaded image and creates an alpha mask
@@ -137,14 +154,14 @@ def remove_background(input_image):
 
     return foreground_pil
 
-#if __name__ == "__main__":
-    # start_time = time.time()
-    # image_dir = './test_data/test_images/'
-    # img_name_list = glob.glob(image_dir + '*')
-    # print(img_name_list)
-    # loaded_image = Image.open(img_name_list[0])
-    # print("Image Size")
-    # print(loaded_image.size)
-    # remove_background(loaded_image)
+if __name__ == "__main__":
+    start_time = time.time()
+    image_dir = './test_data/test_images/'
+    img_name_list = glob.glob(image_dir + '*')
+    print(img_name_list)
+    loaded_image = Image.open(img_name_list[0])
+    print("Image Size")
+    print(loaded_image.size)
+    remove_background(loaded_image)
     # #6.012 seconds with 3.5MB photo
     # print("--- %s seconds ---" % (time.time() - start_time))
