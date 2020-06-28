@@ -95,7 +95,7 @@ def remove_background(input_image):
     predict_np = predict.cpu().data.numpy()
 
     im = Image.fromarray(predict_np * 255).convert('RGB')
-    im_np = np.array(im)
+    #im_np = np.array(im)
     w, h = input_image.size
     imo = im.resize((w, h), resample=Image.BILINEAR)
     pb_np = np.array(imo)
@@ -105,16 +105,16 @@ def remove_background(input_image):
     #https://www.learnopencv.com/alpha-blending-using-opencv-cpp-python/
     foreground = opencv_image
     #background will be image that you want to combine the foreground with.
-    background = np.zeros([foreground.shape[0], foreground.shape[1], 3], dtype=np.uint8)
-    background = cv2.cvtColor(np.array(background), cv2.COLOR_RGB2BGRA)
-    print(foreground.shape)
-    print(background.shape)
-    background.fill(255)
+    #background = np.zeros([foreground.shape[0], foreground.shape[1], 3], dtype=np.uint8)
+    #background = cv2.cvtColor(np.array(background), cv2.COLOR_RGB2BGRA)
+    #print(foreground.shape)
+    #print(background.shape)
+    #background.fill(255)
     alpha = pb_np
 
     #This will take the foreground and mask and create a png image of the foreground with transparent background.
     b, g, r = cv2.split(alpha)
-    print(b.shape)
+    #print(b.shape)
     foreground[:, :, 3] = b
     #cv2.imshow("Output_Image", foreground)
     #cv2.waitKey(0)
