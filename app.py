@@ -149,7 +149,7 @@ def remove_background(input_image):
 
     foreground = cv2.cvtColor(foreground, cv2.COLOR_BGRA2RGBA)
     foreground_pil = Image.fromarray(foreground)
-
+    del foreground
     return foreground_pil
 
 
@@ -177,6 +177,7 @@ def remove_background_api():
         #r = requests.post('http://127.0.0.1:5000/receive_image', files={'file': img_bg_io.getvalue()})
         #print(r)
         img.close()
+        del img
         return resp
 
 if __name__ == '__main__':
