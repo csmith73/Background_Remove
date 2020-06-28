@@ -160,7 +160,7 @@ def remove_background(input_image):
 
 @app.route('/')
 def index():
-    return "PicSpotlight API"
+    return "PicSpotlight API Test 2"
 
 
 @app.route('/remove_background_api', methods=['POST'])
