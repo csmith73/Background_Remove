@@ -156,7 +156,12 @@ def remove_background(input_image):
     return foreground_pil
 
 
+@app.route('/logs')
+def logs():
+    f = open('Background_Remove_Log.log')
+    f.read()
 
+    return f.read()
 
 @app.route('/')
 def index():
