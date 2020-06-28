@@ -37,7 +37,7 @@ elif (model_name == 'u2netp'):
 model_load_start_time = time.time()
 net.load_state_dict(torch.load(model_dir, map_location='cpu'))
 #net.load_state_dict(torch.load(model_dir))
-print("Model Load Time: %s seconds ---" % (time.time() - model_load_start_time))
+app.logger.debug("Model Load Time: %s seconds ---" % (time.time() - model_load_start_time))
 net.eval()
 
 def normPRED(d):
