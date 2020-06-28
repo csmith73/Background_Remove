@@ -137,7 +137,7 @@ def remove_background(input_image):
 
     return foreground_pil
 
-if __name__ == "__main__":
+#if __name__ == "__main__":
     # start_time = time.time()
     # image_dir = './test_data/test_images/'
     # img_name_list = glob.glob(image_dir + '*')
