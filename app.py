@@ -54,7 +54,7 @@ def remove_background(input_image):
     #model_name='u2net'#u2netp
     #model_dir = './saved_models/'+ model_name + '/' + model_name + '.pth'
     Output_Image_Path = './test_data/u2net_results/Alpha_Blending/out1.png'
-
+    app.logger.debug('remove_background function called')
 
     # --------- 2. dataloader ---------
     # eval_transforms = transforms.Compose([RescaleT(320), ToTensor()])
