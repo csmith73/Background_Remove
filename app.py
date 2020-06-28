@@ -24,7 +24,7 @@ if __name__ != '__main__':
 # gunicorn_error_logger = logging.getLogger('gunicorn.error')
 # app.logger.handlers.extend(gunicorn_error_logger.handlers)
 # app.logger.setLevel(logging.DEBUG)
-app.logger.debug('this will show in the log')
+app.logger.debug('first logging test1')
 
 model_name='u2net'#u2netp
 model_dir = './saved_models/'+ model_name + '/' + model_name + '.pth'
