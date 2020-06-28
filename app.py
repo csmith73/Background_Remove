@@ -171,6 +171,11 @@ def remove_background_api():
         print("Post received")
         img = Image.open(request.files['file'].stream)
         app.logger.debug("Image.open: %s seconds ---" % (time.time() - start_time))
+        w,h = img.size
+        w = str(w)
+        h = str(h)
+        app.logger.debut("Image width: %s", w)
+        app.logger.debut("Image height: %s", h)
         #img.save('./static/uploads/upload.jpg')
         img_bg_removed = remove_background(img)
         app.logger.debug("Background Remove Function execution time: %s seconds ---" % (time.time() - start_time))
