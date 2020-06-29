@@ -21,6 +21,8 @@ class RescaleT(object):
 		imidx, image, label = sample['imidx'], sample['image'],sample['label']
 
 		h, w = image.shape[:2]
+		print(h)
+		print(w)
 
 
 		if isinstance(self.output_size,int):
@@ -32,6 +34,10 @@ class RescaleT(object):
 			new_h, new_w = self.output_size
 
 		new_h, new_w = int(new_h), int(new_w)
+		print('Transformed image size....................................')
+		print(new_h)
+		print(new_w)
+		print(self.output_size)
 
 		# #resize the image to new_h x new_w and convert image from range [0,255] to [0,1]
 		# img = transform.resize(image,(new_h,new_w),mode='constant')
@@ -39,7 +45,9 @@ class RescaleT(object):
 
 		img = transform.resize(image,(self.output_size,self.output_size),mode='constant')
 		label = transform.resize(label,(self.output_size,self.output_size),mode='constant', order=0, preserve_range=True)
-
+		lasth, lastw = img.size
+		print(lasth)
+		print(lastw)
 		return {'imidx':imidx, 'image':img,'label':label}
 
 class Rescale(object):
@@ -62,9 +70,13 @@ class Rescale(object):
 			new_h, new_w = self.output_size
 
 		new_h, new_w = int(new_h), int(new_w)
+		print('Transformed image size....................................')
+		print(new_h)
+		print(new_w)
 
 		# #resize the image to new_h x new_w and convert image from range [0,255] to [0,1]
 		img = transform.resize(image,(new_h,new_w),mode='constant')
+
 		lbl = transform.resize(label,(new_h,new_w),mode='constant', order=0, preserve_range=True)
 
 		return {'imidx':imidx, 'image':img,'label':lbl}

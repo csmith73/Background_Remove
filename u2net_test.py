@@ -36,7 +36,8 @@ def normPRED(d):
 model_name='u2net'#u2netp
 model_dir = './saved_models/'+ model_name + '/' + model_name + '.pth'
 # --------- 2. dataloader ---------
-eval_transforms = transforms.Compose([RescaleT(320), ToTensor()])
+#eval_transforms = transforms.Compose([RescaleT(320), ToTensor()])
+eval_transforms = transforms.Compose([ToTensor()])
 # --------- 3. model define ---------
 if(model_name=='u2net'):
     print("...load U2NET---173.6 MB")
@@ -168,6 +169,10 @@ if __name__ == "__main__":
     print(img_name_list)
     loaded_image = Image.open(img_name_list[0])
     print("Image Size")
+    print(loaded_image.size)
+    #loaded_image.thumbnail([320, 320], Image.ANTIALIAS)
+    newsize = (320,320)
+    loaded_image = loaded_image.resize(newsize)
     print(loaded_image.size)
     remove_background(loaded_image)
     # #6.012 seconds with 3.5MB photo

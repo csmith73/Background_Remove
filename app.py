@@ -75,7 +75,7 @@ def remove_background(input_image):
     # print("Model Load Time: %s seconds ---" % (time.time() - model_load_start_time))
     #
     # net.eval()
-    eval_transforms = transforms.Compose([RescaleT(320), ToTensor()])
+    eval_transforms = transforms.Compose([ToTensor()])
     # --------- 4. inference for each image ---------
     # The below code takes the uploaded image and creates an alpha mask
 
@@ -97,29 +97,33 @@ def remove_background(input_image):
     predict = pred
     predict = predict.squeeze()
     predict_np = predict.cpu().data.numpy()
-
-    im = Image.fromarray(predict_np * 255).convert('RGB')
-    # im_np = np.array(im)
-    w, h = input_image.size
-    imo = im.resize((w, h), resample=Image.BILINEAR)
-    pb_np = np.array(imo)
     del d1, d2, d3, d4, d5, d6, d7
+    return predict_np
+
+
+
+    # im = Image.fromarray(predict_np * 255).convert('RGB')
+    # # im_np = np.array(im)
+    # w, h = input_image.size
+    # imo = im.resize((w, h), resample=Image.BILINEAR)
+    # pb_np = np.array(imo)
+    #
 
     # Below code is to take the alpha mask and remove the background from image
     # https://www.learnopencv.com/alpha-blending-using-opencv-cpp-python/
-    foreground = opencv_image
+    #foreground = opencv_image
     # background will be image that you want to combine the foreground with.
     # background = np.zeros([foreground.shape[0], foreground.shape[1], 3], dtype=np.uint8)
     # background = cv2.cvtColor(np.array(background), cv2.COLOR_RGB2BGRA)
     # print(foreground.shape)
     # print(background.shape)
     # background.fill(255)
-    alpha = pb_np
+    #alpha = pb_np
 
     # This will take the foreground and mask and create a png image of the foreground with transparent background.
-    b, g, r = cv2.split(alpha)
+    #b, g, r = cv2.split(alpha)
     # print(b.shape)
-    foreground[:, :, 3] = b
+    #foreground[:, :, 3] = b
     # cv2.imshow("Output_Image", foreground)
     # cv2.waitKey(0)
     # cv2.imwrite(Output_Image_Path, foreground)
@@ -146,10 +150,10 @@ def remove_background(input_image):
     # cv2.imshow("Output_Image", outImage/255 )
     # cv2.waitKey(0)
 
-    foreground = cv2.cvtColor(foreground, cv2.COLOR_BGRA2RGBA)
-    foreground_pil = Image.fromarray(foreground)
-    del foreground
-    return foreground_pil
+    # foreground = cv2.cvtColor(foreground, cv2.COLOR_BGRA2RGBA)
+    # foreground_pil = Image.fromarray(foreground)
+    # del foreground
+    # return foreground_pil
 
 
 @app.route('/logs')
@@ -189,7 +193,7 @@ def remove_background_api():
         # img.save('./static/uploads/upload.jpg')
         img_bg_io = io.BytesIO()
 
-        img_bg_removed.save(img_bg_io, 'PNG', quality=100)
+        np.savez(img_bg_io, A=img_bg_removed)
         app.logger.debug("Savings returned image to bytes io object: %s seconds ---" % (time.time() - start_time))
         img_bg_io.seek(0)
         app.logger.debug("img bg io seek: %s seconds ---" % (time.time() - start_time))
@@ -203,4 +207,5 @@ def remove_background_api():
 
 
 if __name__ == '__main__':
+    #app.run(host='127.0.0.1', port='5001')
     app.run(host='0.0.0.0')
